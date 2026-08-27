@@ -32,10 +32,12 @@ export async function POST(request: NextRequest) {
 "${text}"
 
 [분석 및 평가 지침]
-1. 첨부된 사진과 텍스트를 종합하여 모든 음식 항목을 식별하고, 현실적인 한국인 1인분 분량 기준으로 칼로리 및 탄·단·지(g)를 계산하세요.
-2. 만약 입력된 텍스트나 사진이 음식이 아니거나(예: 무의미한 자음/모음, 동물, 영수증, 풍경 등) 분석이 불가능한 경우 "isFood": false 로 반환하세요.
-3. 사용자의 목표(${goal})와 일일 권장량에 맞춘 따뜻하고 전문적인 1줄 종합 피드백(summaryComment)을 작성하세요.
-4. 과다하거나 부족한 영양소에 대해 ⚠️(주의) 또는 💡(칭찬/권장) 이모지가 포함된 간결한 주의사항(warnings)을 1~2개 제공하세요.
+1. 첨부된 사진과 텍스트를 종합하여 모든 음식 항목을 식별하세요.
+2. 사용자가 분량을 명시한 경우(예: "닭가슴살 200g", "밥 300g", "계란 3개", "우유 500ml", "삼겹살 2인분", "아몬드 한 줌") 반드시 그 명시된 분량을 기준으로 칼로리와 탄·단·지(g)를 계산하고, items[].name 에 그 분량을 그대로 표기하세요(예: "닭가슴살 200g"). 분량이 적히지 않은 항목만 현실적인 한국인 1인분 기준으로 추정하고 name 에 "(1인분 추정)" 처럼 표시하세요.
+3. totalCalories 및 carbs/protein/fat 은 모든 items 값의 합계와 일치해야 합니다.
+4. 만약 입력된 텍스트나 사진이 음식이 아니거나(예: 무의미한 자음/모음, 동물, 영수증, 풍경 등) 분석이 불가능한 경우 "isFood": false 로 반환하세요.
+5. 사용자의 목표(${goal})와 일일 권장량에 맞춘 따뜻하고 전문적인 1줄 종합 피드백(summaryComment)을 작성하세요.
+6. 과다하거나 부족한 영양소에 대해 ⚠️(주의) 또는 💡(칭찬/권장) 이모지가 포함된 간결한 주의사항(warnings)을 1~2개 제공하세요.
 
 반드시 다음 JSON 스키마를 엄격히 준수하여 순수 JSON으로만 응답하세요:
 {
@@ -75,7 +77,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Try primary and fallback Gemini models with both query and header auth
-        const models = ['gemini-1.5-flash', 'gemini-1.5-pro', 'gemini-2.0-flash']
+        const models = ['gemini-2.0-flash', 'gemini-2.5-flash', 'gemini-2.5-pro']
         let geminiParsed: any = null
 
         for (const model of models) {

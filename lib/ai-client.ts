@@ -95,7 +95,10 @@ export function estimateNutritionFromInput(
     throw new Error('INVALID_DIET_DATA')
   }
 
-  // Pre-compiled comprehensive nutritional knowledge base for common Korean/Western foods
+  // Pre-compiled comprehensive nutritional knowledge base for common Korean/Western foods.
+  // `baseG` = the gram weight the cal/c/p/f values correspond to (used to scale when the
+  // user types an explicit amount such as "닭가슴살 200g"). `unit` = the counting unit that
+  // the base portion represents (used to scale "계란 3개", "삼겹살 2인분" etc.).
   const foodDatabase: Array<{
     keywords: string[]
     name: string
@@ -103,39 +106,74 @@ export function estimateNutritionFromInput(
     c: number
     p: number
     f: number
+    baseG: number
+    unit: string
+    baseCount?: number // how many `unit` the base values represent (default 1)
   }> = [
-    { keywords: ['공기밥', '쌀밥', '밥한공기', '흰밥', '백미밥'], name: '공기밥 1공기', cal: 300, c: 65, p: 6, f: 1 },
-    { keywords: ['현미밥', '잡곡밥'], name: '현미밥 1공기', cal: 280, c: 58, p: 7, f: 2 },
-    { keywords: ['닭가슴살', '닭가슴살구이', '닭가슴살큐브'], name: '닭가슴살 100g', cal: 120, c: 0, p: 24, f: 2 },
-    { keywords: ['샐러드', '야채', '채소샐러드', '양상추'], name: '신선 채소 샐러드', cal: 80, c: 10, p: 3, f: 3 },
-    { keywords: ['제육볶음', '돼지불고기', '제육'], name: '제육볶음 1인분', cal: 450, c: 15, p: 32, f: 28 },
-    { keywords: ['된장찌개', '된장국'], name: '된장찌개 1뚝배기', cal: 180, c: 12, p: 10, f: 8 },
-    { keywords: ['김치찌개'], name: '김치찌개 1뚝배기', cal: 220, c: 14, p: 14, f: 12 },
-    { keywords: ['삼겹살', '오겹살'], name: '삼겹살 200g', cal: 660, c: 0, p: 34, f: 58 },
-    { keywords: ['소고기', '스테이크', '소등심', '안심'], name: '소고기 스테이크 200g', cal: 480, c: 0, p: 44, f: 32 },
-    { keywords: ['달걀', '계란', '삶은계란', '계란후라이'], name: '계란 2개', cal: 150, c: 1, p: 13, f: 10 },
-    { keywords: ['라면', '신라면', '진라면'], name: '라면 1그릇', cal: 500, c: 75, p: 10, f: 18 },
-    { keywords: ['짜장면', '자장면'], name: '짜장면 1그릇', cal: 700, c: 110, p: 20, f: 20 },
-    { keywords: ['짬뽕'], name: '짬뽕 1그릇', cal: 550, c: 80, p: 25, f: 15 },
-    { keywords: ['떡볶이'], name: '떡볶이 1인분', cal: 420, c: 85, p: 8, f: 5 },
-    { keywords: ['김밥', '참치김밥'], name: '김밥 1줄', cal: 400, c: 60, p: 12, f: 11 },
-    { keywords: ['돈까스', '돈가스'], name: '등심 돈까스 1인분', cal: 650, c: 45, p: 30, f: 38 },
-    { keywords: ['피자'], name: '피자 2조각', cal: 560, c: 64, p: 24, f: 22 },
-    { keywords: ['햄버거', '버거'], name: '버거 세트', cal: 750, c: 85, p: 28, f: 33 },
-    { keywords: ['치킨', '후라이드치킨', '양념치킨'], name: '치킨 반마리', cal: 850, c: 35, p: 55, f: 52 },
-    { keywords: ['단백질쉐이크', '프로틴', '프로틴쉐이크'], name: '프로틴 쉐이크 1회', cal: 140, c: 4, p: 26, f: 2 },
-    { keywords: ['아메리카노', '커피', '블랙커피'], name: '아메리카노', cal: 10, c: 1, p: 1, f: 0 },
-    { keywords: ['카페라떼', '라떼'], name: '카페라떼 1잔', cal: 180, c: 15, p: 9, f: 9 },
-    { keywords: ['바나나'], name: '바나나 1개', cal: 105, c: 27, p: 1, f: 0 },
-    { keywords: ['사과'], name: '사과 1개', cal: 95, c: 25, p: 0.5, f: 0.3 },
-    { keywords: ['고구마'], name: '군고구마 1개', cal: 200, c: 46, p: 3, f: 0.5 },
-    { keywords: ['샌드위치'], name: '클럽 샌드위치', cal: 380, c: 42, p: 18, f: 15 },
-    { keywords: ['파스타', '스파게티'], name: '토마토/오일 파스타', cal: 520, c: 78, p: 18, f: 14 },
-    { keywords: ['연어', '연어덮밥', '연어구이'], name: '생연어 구이/덮밥', cal: 480, c: 40, p: 35, f: 20 },
-    { keywords: ['김치'], name: '배추김치', cal: 25, c: 4, p: 1.5, f: 0.2 },
-    { keywords: ['순두부찌개'], name: '순두부찌개 1뚝배기', cal: 250, c: 12, p: 18, f: 14 },
-    { keywords: ['비빔밥'], name: '산채 비빔밥', cal: 550, c: 88, p: 15, f: 12 },
+    { keywords: ['공기밥', '쌀밥', '밥한공기', '흰밥', '백미밥'], name: '공기밥 1공기', cal: 300, c: 65, p: 6, f: 1, baseG: 210, unit: '공기' },
+    { keywords: ['현미밥', '잡곡밥'], name: '현미밥 1공기', cal: 280, c: 58, p: 7, f: 2, baseG: 210, unit: '공기' },
+    { keywords: ['닭가슴살', '닭가슴살구이', '닭가슴살큐브'], name: '닭가슴살 100g', cal: 120, c: 0, p: 24, f: 2, baseG: 100, unit: '개' },
+    { keywords: ['샐러드', '야채', '채소샐러드', '양상추'], name: '신선 채소 샐러드', cal: 80, c: 10, p: 3, f: 3, baseG: 150, unit: '인분' },
+    { keywords: ['제육볶음', '돼지불고기', '제육'], name: '제육볶음 1인분', cal: 450, c: 15, p: 32, f: 28, baseG: 200, unit: '인분' },
+    { keywords: ['된장찌개', '된장국'], name: '된장찌개 1뚝배기', cal: 180, c: 12, p: 10, f: 8, baseG: 400, unit: '뚝배기' },
+    { keywords: ['김치찌개'], name: '김치찌개 1뚝배기', cal: 220, c: 14, p: 14, f: 12, baseG: 400, unit: '뚝배기' },
+    { keywords: ['삼겹살', '오겹살'], name: '삼겹살 200g', cal: 660, c: 0, p: 34, f: 58, baseG: 200, unit: '인분' },
+    { keywords: ['소고기', '스테이크', '소등심', '안심'], name: '소고기 스테이크 200g', cal: 480, c: 0, p: 44, f: 32, baseG: 200, unit: '인분' },
+    { keywords: ['달걀', '계란', '삶은계란', '계란후라이'], name: '계란 2개', cal: 150, c: 1, p: 13, f: 10, baseG: 100, unit: '개', baseCount: 2 },
+    { keywords: ['라면', '신라면', '진라면'], name: '라면 1그릇', cal: 500, c: 75, p: 10, f: 18, baseG: 550, unit: '그릇' },
+    { keywords: ['짜장면', '자장면'], name: '짜장면 1그릇', cal: 700, c: 110, p: 20, f: 20, baseG: 650, unit: '그릇' },
+    { keywords: ['짬뽕'], name: '짬뽕 1그릇', cal: 550, c: 80, p: 25, f: 15, baseG: 700, unit: '그릇' },
+    { keywords: ['떡볶이'], name: '떡볶이 1인분', cal: 420, c: 85, p: 8, f: 5, baseG: 300, unit: '인분' },
+    { keywords: ['김밥', '참치김밥'], name: '김밥 1줄', cal: 400, c: 60, p: 12, f: 11, baseG: 230, unit: '줄' },
+    { keywords: ['돈까스', '돈가스'], name: '등심 돈까스 1인분', cal: 650, c: 45, p: 30, f: 38, baseG: 300, unit: '인분' },
+    { keywords: ['피자'], name: '피자 2조각', cal: 560, c: 64, p: 24, f: 22, baseG: 200, unit: '조각', baseCount: 2 },
+    { keywords: ['햄버거', '버거'], name: '버거 세트', cal: 750, c: 85, p: 28, f: 33, baseG: 400, unit: '개' },
+    { keywords: ['치킨', '후라이드치킨', '양념치킨'], name: '치킨 반마리', cal: 850, c: 35, p: 55, f: 52, baseG: 400, unit: '반마리' },
+    { keywords: ['단백질쉐이크', '프로틴', '프로틴쉐이크'], name: '프로틴 쉐이크 1회', cal: 140, c: 4, p: 26, f: 2, baseG: 330, unit: '회' },
+    { keywords: ['아메리카노', '커피', '블랙커피'], name: '아메리카노', cal: 10, c: 1, p: 1, f: 0, baseG: 350, unit: '잔' },
+    { keywords: ['카페라떼', '라떼'], name: '카페라떼 1잔', cal: 180, c: 15, p: 9, f: 9, baseG: 300, unit: '잔' },
+    { keywords: ['바나나'], name: '바나나 1개', cal: 105, c: 27, p: 1, f: 0, baseG: 120, unit: '개' },
+    { keywords: ['사과'], name: '사과 1개', cal: 95, c: 25, p: 0.5, f: 0.3, baseG: 200, unit: '개' },
+    { keywords: ['고구마'], name: '군고구마 1개', cal: 200, c: 46, p: 3, f: 0.5, baseG: 150, unit: '개' },
+    { keywords: ['샌드위치'], name: '클럽 샌드위치', cal: 380, c: 42, p: 18, f: 15, baseG: 200, unit: '개' },
+    { keywords: ['파스타', '스파게티'], name: '토마토/오일 파스타', cal: 520, c: 78, p: 18, f: 14, baseG: 350, unit: '인분' },
+    { keywords: ['연어', '연어덮밥', '연어구이'], name: '생연어 구이/덮밥', cal: 480, c: 40, p: 35, f: 20, baseG: 250, unit: '인분' },
+    { keywords: ['김치'], name: '배추김치', cal: 25, c: 4, p: 1.5, f: 0.2, baseG: 40, unit: '접시' },
+    { keywords: ['순두부찌개'], name: '순두부찌개 1뚝배기', cal: 250, c: 12, p: 18, f: 14, baseG: 400, unit: '뚝배기' },
+    { keywords: ['비빔밥'], name: '산채 비빔밥', cal: 550, c: 88, p: 15, f: 12, baseG: 500, unit: '그릇' },
   ]
+
+  // Split the input into per-food segments so one item can't borrow another's amount.
+  // e.g. "흰밥 150g, 닭가슴살 200g" -> ["흰밥 150g", "닭가슴살 200g"]
+  const segments = cleanText.split(/[,\n/+·]|\s(?:그리고|랑|이랑|하고|및)\s/).map((s) => s.trim()).filter(Boolean)
+  const UNIT_RE = /(\d+(?:\.\d+)?)\s*(kg|킬로|g|그램|그람|ml|밀리|리터|l|개|알|인분|조각|줄|공기|그릇|잔|컵|캔|뚝배기|접시|장|판|스푼|봉지|봉|회|반마리|마리)/
+
+  // Parse an explicit amount the user wrote next to a food keyword and return how much to
+  // scale the base portion by. Handles grams / kg / ml and counting units (개, 인분, 조각...).
+  const round1 = (n: number) => Math.round(n * 10) / 10
+  const getAmountScale = (
+    food: { keywords: string[]; baseG: number; unit: string; baseCount?: number }
+  ): { scale: number; label: string | null } => {
+    // find the input segment that mentions this food, then read an amount from it only
+    const seg = segments.find((s) => food.keywords.some((k) => s.includes(k)))
+    const m = seg ? seg.match(UNIT_RE) : null
+    if (!m) return { scale: 1, label: null }
+
+    const value = parseFloat(m[1])
+    const unit = m[2]
+    if (!isFinite(value) || value <= 0) return { scale: 1, label: null }
+
+    // weight / volume units -> scale by grams relative to baseG
+    if (unit === 'g' || unit === '그램' || unit === '그람' || unit === 'ml' || unit === '밀리') {
+      return { scale: value / food.baseG, label: `${round1(value)}${unit === '그램' || unit === '그람' ? 'g' : unit}` }
+    }
+    if (unit === 'kg' || unit === '킬로' || unit === 'l' || unit === '리터') {
+      const grams = value * 1000
+      return { scale: grams / food.baseG, label: `${round1(value)}${unit === '킬로' ? 'kg' : unit}` }
+    }
+    // counting units -> base values represent `baseCount` of `food.unit` (default 1)
+    return { scale: value / (food.baseCount ?? 1), label: `${round1(value)}${unit}` }
+  }
 
   let matchedItems: FoodItemBreakdown[] = []
   let totalCal = 0
@@ -146,17 +184,21 @@ export function estimateNutritionFromInput(
   foodDatabase.forEach((food) => {
     const isMatched = food.keywords.some((k) => cleanText.includes(k))
     if (isMatched) {
-      matchedItems.push({
-        name: food.name,
-        calories: food.cal,
-        carbs: food.c,
-        protein: food.p,
-        fat: food.f,
-      })
-      totalCal += food.cal
-      totalCarbs += food.c
-      totalProtein += food.p
-      totalFat += food.f
+      const { scale, label } = getAmountScale(food)
+      // clamp to a sane range so a typo like "밥 5000g" can't produce absurd totals
+      const s = Math.min(Math.max(scale, 0.1), 20)
+      const cal = Math.round(food.cal * s)
+      const c = round1(food.c * s)
+      const p = round1(food.p * s)
+      const f = round1(food.f * s)
+      // when the user gave an explicit amount, show it in the item name
+      const name = label ? food.name.replace(/\s*\d+(?:\.\d+)?\s*\S+$/, '').trim() + ` ${label}` : food.name
+
+      matchedItems.push({ name, calories: cal, carbs: c, protein: p, fat: f })
+      totalCal += cal
+      totalCarbs += c
+      totalProtein += p
+      totalFat += f
     }
   })
 
@@ -181,13 +223,32 @@ export function estimateNutritionFromInput(
       if (words.length === 0) {
         throw new Error('INVALID_DIET_DATA')
       }
-      const count = Math.min(Math.max(words.length, 1), 4)
-      totalCal = 220 * count
-      totalCarbs = 30 * count
-      totalProtein = 12 * count
-      totalFat = 6 * count
+
+      // If the user wrote explicit weights (e.g. "훈제오리 300g, 방울토마토 100g"),
+      // estimate from total grams using mixed-meal density instead of a flat per-word guess.
+      let grams = 0
+      const gramRe = /(\d+(?:\.\d+)?)\s*(kg|킬로|g|그램|그람|ml|밀리)/g
+      let gm: RegExpExecArray | null
+      while ((gm = gramRe.exec(cleanText)) !== null) {
+        const v = parseFloat(gm[1])
+        grams += gm[2] === 'kg' || gm[2] === '킬로' ? v * 1000 : v
+      }
+
+      if (grams > 0) {
+        grams = Math.min(grams, 3000)
+        totalCal = Math.round(grams * 1.5)
+        totalCarbs = round1(grams * 0.15)
+        totalProtein = round1(grams * 0.09)
+        totalFat = round1(grams * 0.05)
+      } else {
+        const count = Math.min(Math.max(words.length, 1), 4)
+        totalCal = 220 * count
+        totalCarbs = 30 * count
+        totalProtein = 12 * count
+        totalFat = 6 * count
+      }
       matchedItems.push({
-        name: `${cleanText.slice(0, 20)}... (추정치)`,
+        name: `${cleanText.slice(0, 20)}${grams > 0 ? ` (${Math.round(grams)}g 기준 추정)` : '... (추정치)'}`,
         calories: totalCal,
         carbs: totalCarbs,
         protein: totalProtein,
