@@ -1,4 +1,3 @@
-web application/stitch/projects/5216639923465261256/screens/b3ea2c8af7f44f098a0b0c5af7432628
 # NutriFlow Vitality Design System
 
 ## 1. Brand Identity & Visual Direction
