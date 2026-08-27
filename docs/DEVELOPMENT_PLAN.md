@@ -1,9 +1,10 @@
 # [개발 계획서] 한 페이지 식단 칼로리 & 영양 균형 추정기 (Diet Analyzer)
 
-> **문서 버전**: v1.0.0  
+> **문서 버전**: v1.2.0  
 > **기준 문서**: [PRD.md](../PRD.md)  
-> **생성 일시**: 2026-08-26  
-> **문서 상태**: Approved for Sprint Execution  
+> **최초 생성**: 2026-08-26  
+> **최종 수정**: 2026-08-27 (Sprint 2 완료 및 커밋 반영)  
+> **문서 상태**: Sprint 2 Completed / Sprint 3 Ready  
 
 ---
 
@@ -18,42 +19,39 @@
 | :--- | :--- | :--- |
 | **Framework** | Next.js 16 (App Router), React 19 | 최신 리액트 서버/클라이언트 컴포넌트 아키텍처 |
 | **Styling** | Tailwind CSS v4, Lucide React, Shadcn/UI | 현대적인 글래스모피즘 & 반응형 UI 디자인 |
-| **AI Integration** | Gemini / LLM API (Client / Route Handler) | 멀티모달(텍스트+Base64 이미지) 지원 구조화 JSON 파싱 |
-| **Image Generation** | `html-to-image` / Canvas API | 결과 DOM을 고해상도 PNG 이미지로 즉시 변환 |
-| **Share & Export** | Async Clipboard API, Web Share API | 1클릭 이미지 클립보드 복사, 모바일 OS 공유 시트, PNG 다운로드 |
+| **AI Integration** | Gemini / LLM API (Client / Route Handler) | 멀티모달(텍스트+Base64 이미지) 지원 구조화 JSON 파싱 & 스마트 Fallback 엔진 |
+| **Image Generation** | `html-to-image` / Canvas API | 결과 DOM을 고해상도 PNG 이미지로 즉시 변환 (Sprint 4) |
+| **Share & Export** | Async Clipboard API, Web Share API | 1클릭 이미지 클립보드 복사, 모바일 OS 공유 시트, PNG 다운로드 (Sprint 4) |
 
-### 1.3 디렉토리 구조 계획
+### 1.3 디렉토리 구조 현황 및 계획
 ```plaintext
 diet-analyzer/
 ├── docs/
-│   └── DEVELOPMENT_PLAN.md      # 본 개발 계획서
+│   └── DEVELOPMENT_PLAN.md      # 본 개발 계획서 (v1.2.0)
 ├── PRD.md                       # 제품 요구사항 정의서
 ├── app/
 │   ├── layout.tsx               # 루트 레이아웃 & 폰트/테마
 │   ├── page.tsx                 # 단일 페이지 엔트리포인트
 │   ├── globals.css              # 전역 스타일 및 디자인 토큰
 │   └── api/
-│       └── analyze/route.ts     # (옵션) AI 분석 프록시 라우트
+│       └── analyze/
+│           └── route.ts         # [Sprint 2] AI 분석 Next.js Route Handler
 ├── components/
-│   ├── diet-analyzer.tsx        # 메인 통합 컨테이너 컴포넌트
-│   ├── form/
-│   │   ├── body-info-input.tsx  # 키/몸무게 입력 필드
-│   │   ├── goal-selector.tsx    # 목적 선택 (다이어트/벌크업/건강)
-│   │   ├── food-text-input.tsx  # 텍스트 식단 입력 (글자수 제한/카운터)
-│   │   └── food-image-upload.tsx# 사진 업로드/미리보기/삭제
+│   ├── diet-analyzer.tsx        # [Sprint 1, 2] 메인 통합 컨테이너 컴포넌트
+│   ├── common/
+│   │   ├── loading-overlay.tsx  # [Sprint 2] "AI 분석 중..." 스피너 오버레이 (PRD 5.4)
+│   │   ├── retry-modal.tsx      # [Sprint 2] "AI 응답 실패 -> 재분석 중" 최종 실패 알림 (PRD 5.3)
+│   │   └── error-state.tsx      # [Sprint 2] 비정상 데이터 입력값 재점검 안내 UI (PRD 5.5)
 │   ├── result/
-│   │   ├── summary-panel.tsx    # 칼로리/탄단지 게이지 및 경고 요약
-│   │   ├── share-card.tsx       # 고화질 공유용 렌더링 카드 DOM
-│   │   └── share-actions.tsx    # 1클릭 복사/공유/다운로드 액션 버튼
-│   └── common/
-│       ├── loading-overlay.tsx  # "AI 분석 중..." 스피너 오버레이
-│       ├── retry-modal.tsx      # "AI 응답 실패 -> 재분석 중" 알림
-│       └── error-state.tsx      # 비정상 데이터 입력값 재점검 안내 UI
+│   │   ├── summary-panel.tsx    # [Sprint 3] 칼로리/탄단지 게이지 및 경고 요약
+│   │   ├── share-card.tsx       # [Sprint 3] 고화질 공유용 렌더링 카드 DOM
+│   │   └── share-actions.tsx    # [Sprint 4] 1클릭 복사/공유/다운로드 액션 버튼
+│   └── ui/                      # 버튼 및 기본 UI 컴포넌트
 └── lib/
-    ├── nutrition-calc.ts        # BMR/TDEE 및 권장 영양소 계산 로직
-    ├── ai-client.ts             # AI API 호출, 프롬프트 엔지니어링 & JSON 파서
-    ├── image-export.ts          # DOM to Image Blob 변환 및 다운로드 유틸
-    ├── share-handler.ts         # Clipboard & Web Share API 핸들러
+    ├── nutrition-calc.ts        # [Sprint 1] BMR/TDEE 및 권장 영양소 계산 로직
+    ├── ai-client.ts             # [Sprint 2] AI API 호출, 1초 재시도 파이프라인 & 데이터 검증
+    ├── image-export.ts          # [Sprint 4] DOM to Image Blob 변환 및 다운로드 유틸
+    ├── share-handler.ts         # [Sprint 4] Clipboard & Web Share API 핸들러
     └── utils.ts                 # 공통 유틸리티
 ```
 
