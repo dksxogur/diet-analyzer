@@ -31,6 +31,7 @@ import { RetryModal } from '@/components/common/retry-modal'
 import { ErrorState } from '@/components/common/error-state'
 import { SummaryPanel } from '@/components/result/summary-panel'
 import { ShareCard } from '@/components/result/share-card'
+import { ShareActions } from '@/components/result/share-actions'
 
 export function DietAnalyzer() {
   // --- Form States ---
@@ -578,6 +579,9 @@ export function DietAnalyzer() {
                   height={height}
                   weight={weight}
                 />
+
+                {/* 3. 1-Click Share & Export Actions (Sprint 4) */}
+                <ShareActions summaryComment={analysisResult.summaryComment} />
               </section>
             </div>
           )}

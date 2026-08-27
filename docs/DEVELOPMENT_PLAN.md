@@ -1,10 +1,10 @@
 # [개발 계획서] 한 페이지 식단 칼로리 & 영양 균형 추정기 (Diet Analyzer)
 
-> **문서 버전**: v1.3.0  
+> **문서 버전**: v1.4.0  
 > **기준 문서**: [PRD.md](../PRD.md)  
 > **최초 생성**: 2026-08-26  
-> **최종 수정**: 2026-08-27 (Sprint 3 완료)  
-> **문서 상태**: Sprint 3 Completed / Sprint 4 Ready  
+> **최종 수정**: 2026-08-27 (Sprint 4 완료)  
+> **문서 상태**: Sprint 4 Completed / Sprint 5 Ready  
 
 ---
 
@@ -20,24 +20,24 @@
 | **Framework** | Next.js 16 (App Router), React 19 | 최신 리액트 서버/클라이언트 컴포넌트 아키텍처 |
 | **Styling** | Tailwind CSS v4, Lucide React, Shadcn/UI | 현대적인 글래스모피즘 & 반응형 UI 디자인 |
 | **AI Integration** | Gemini / LLM API (Client / Route Handler) | 멀티모달(텍스트+Base64 이미지) 지원 구조화 JSON 파싱 & 스마트 Fallback 엔진 |
-| **Image Generation** | `html-to-image` / Canvas API | 결과 DOM을 고해상도 PNG 이미지로 즉시 변환 (Sprint 4) |
-| **Share & Export** | Async Clipboard API, Web Share API | 1클릭 이미지 클립보드 복사, 모바일 OS 공유 시트, PNG 다운로드 (Sprint 4) |
+| **Image Generation** | `html-to-image` / Canvas API | 결과 DOM을 고해상도 PNG 이미지로 즉시 변환 (2x Retina 지원) |
+| **Share & Export** | Async Clipboard API, Web Share API | 1클릭 이미지 클립보드 복사, 모바일 OS 공유 시트, PNG 다운로드 Fallback |
 
 ### 1.3 디렉토리 구조 현황 및 계획
 ```plaintext
 diet-analyzer/
 ├── docs/
-│   └── DEVELOPMENT_PLAN.md      # 본 개발 계획서 (v1.3.0)
+│   └── DEVELOPMENT_PLAN.md      # 본 개발 계획서 (v1.4.0)
 ├── PRD.md                       # 제품 요구사항 정의서
 ├── app/
-│   ├── layout.tsx               # 루트 레이아웃 & 폰트/테마
+│   ├── layout.tsx               # 루트 레이아웃 & 폰트/테마 & Toaster
 │   ├── page.tsx                 # 단일 페이지 엔트리포인트
 │   ├── globals.css              # 전역 스타일 및 디자인 토큰
 │   └── api/
 │       └── analyze/
 │           └── route.ts         # [Sprint 2] AI 분석 Next.js Route Handler
 ├── components/
-│   ├── diet-analyzer.tsx        # [Sprint 1, 2] 메인 통합 컨테이너 컴포넌트
+│   ├── diet-analyzer.tsx        # [Sprint 1-4] 메인 통합 컨테이너 컴포넌트
 │   ├── common/
 │   │   ├── loading-overlay.tsx  # [Sprint 2] "AI 분석 중..." 스피너 오버레이 (PRD 5.4)
 │   │   ├── retry-modal.tsx      # [Sprint 2] "AI 응답 실패 -> 재분석 중" 최종 실패 알림 (PRD 5.3)
@@ -46,7 +46,7 @@ diet-analyzer/
 │   │   ├── summary-panel.tsx    # [Sprint 3] 칼로리/탄단지 게이지 및 경고 요약
 │   │   ├── share-card.tsx       # [Sprint 3] 고화질 공유용 렌더링 카드 DOM
 │   │   └── share-actions.tsx    # [Sprint 4] 1클릭 복사/공유/다운로드 액션 버튼
-│   └── ui/                      # 버튼 및 기본 UI 컴포넌트
+│   └── ui/                      # 버튼 및 기본 UI 컴포넌트 (Sonner 등)
 └── lib/
     ├── nutrition-calc.ts        # [Sprint 1] BMR/TDEE 및 권장 영양소 계산 로직
     ├── ai-client.ts             # [Sprint 2] AI API 호출, 1초 재시도 파이프라인 & 데이터 검증
@@ -70,9 +70,9 @@ gantt
     section Sprint 3
     영양 분석 대시보드 & 시각적 카드    :done, s3, after s2, 1d
     section Sprint 4
-    1클릭 공유/복사/다운로드 Fallback    :active, s4, after s3, 1d
+    1클릭 공유/복사/다운로드 Fallback    :done, s4, after s3, 1d
     section Sprint 5
-    E2E 검증, DoD 달성 및 최적화        :s5, after s4, 1d
+    E2E 검증, DoD 달성 및 최적화        :active, s5, after s4, 1d
 ```
 
 ---
@@ -124,21 +124,21 @@ gantt
 
 ---
 
-### 🏃 Sprint 4: 1클릭 클립보드 복사, Web Share API 및 이미지 다운로드 Fallback
+### 🏃 Sprint 4: 1클릭 클립보드 복사, Web Share API 및 이미지 다운로드 Fallback (완료)
 
 * **목표**: 결과 카드를 1클릭으로 클립보드에 이미지로 복사하거나 시스템 공유를 실행하고, 미지원 브라우저 fallback을 완성한다.
 * **주요 태스크**:
-  1. **[Image Export] DOM to Canvas / PNG 변환기 (`lib/image-export.ts`)**
+  1. **[Image Export] DOM to Canvas / PNG 변환기 (`lib/image-export.ts`)** - [완료]
      - 공유 카드 DOM 요소를 레티나 해상도(2x scale)의 고화질 PNG Blob으로 변환
-  2. **[Action] 1클릭 클립보드 이미지 복사 (`[카드 이미지 클립보드 복사]`)**
+  2. **[Action] 1클릭 클립보드 이미지 복사 (`[카드 이미지 클립보드 복사]`)** - [완료]
      - `navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])` 구현
      - 복사 완료 토스트 알림 ("결과 카드 이미지가 클립보드에 복사되었습니다!")
-  3. **[Action] 1클릭 SNS 공유 (`[공유하기 (SNS/오픈채팅)]`)**
+  3. **[Action] 1클릭 SNS 공유 (`[공유하기 (SNS/오픈채팅)]`)** - [완료]
      - `navigator.share({ files: [file], title: '...', text: '...' })` 호출
      - 시스템 공유 창(카카오톡, 인스타그램, 메시지 등) 호출
-  4. **[Exception & Fallback] 미지원 환경 Fallback (PRD 5.6)**
+  4. **[Exception & Fallback] 미지원 환경 Fallback (PRD 5.6)** - [완료]
      - Web Share API 미지원 브라우저 감지 시 "이 브라우저에서는 공유 기능을 지원하지 않습니다. 이미지를 직접 저장합니다." 안내 후 자동 PNG 다운로드 실행
-  5. **[Action] 이미지 직접 다운로드 (`[이미지 다운로드]`)**
+  5. **[Action] 이미지 직접 다운로드 (`[이미지 다운로드]`)** - [완료]
      - `diet-analysis-[날짜].png` 파일 즉시 다운로드 링크 트리거
 
 ---
@@ -156,7 +156,7 @@ gantt
      - [x] "AI 분석 중..." 로딩 오버레이
      - [x] "AI 응답 실패" -> "AI 재분석 중..." 자동 재시도
      - [x] 비정상 입력값 재점검 유도 UI
-     - [ ] Web Share 미지원 환경 다운로드 Fallback
+     - [x] Web Share 미지원 환경 다운로드 Fallback
   5. **[DoD Check 5]** Out of Scope 준수 (DB/로그인/결제 서버 없는 순수 클라이언트 앱)
   6. **[Polish]** 모바일 및 데스크톱 반응형 뷰포트 정합성 및 부드러운 애니메이션 적용
 
@@ -168,13 +168,13 @@ gantt
 | :---: | :--- | :---: | :---: |
 | **DoD-1** | 단일 화면(Single-Page) 구성 완료 | Sprint 1, 3 | ✅ 완료 (Sprint 1, 3) |
 | **DoD-2** | TDEE 산출 및 AI 탄단지/칼로리/경고 분석 출력 | Sprint 1, 2, 3 | ✅ 완료 (Sprint 1, 2, 3) |
-| **DoD-3** | 요약 결과 카드 1클릭 클립보드 복사 & Web Share 연동 | Sprint 4 | ⬜ 대기 |
+| **DoD-3** | 요약 결과 카드 1클릭 클립보드 복사 & Web Share 연동 | Sprint 4 | ✅ 완료 (Sprint 4) |
 | **DoD-4-1** | [예외 1] 빈 입력 시 `#FF0000` 경고 문구 및 포커스 | Sprint 1 | ✅ 완료 (Sprint 1) |
 | **DoD-4-2** | [예외 2] 글자수 인디케이터 (0/200) 및 초과 제한/빨간색 전환 | Sprint 1 | ✅ 완료 (Sprint 1) |
 | **DoD-4-3** | [예외 3] AI 응답 지연 시 "AI 분석 중..." 스피너 오버레이 | Sprint 2 | ✅ 완료 (Sprint 2) |
 | **DoD-4-4** | [예외 4] AI 응답 실패 시 1초 후 "AI 재분석 중..." 1회 자동 재시도 | Sprint 2 | ✅ 완료 (Sprint 2) |
 | **DoD-4-5** | [예외 5] 비정상 데이터 시 재점검 유도 및 재시도 버튼 | Sprint 2, 3 | ✅ 완료 (Sprint 2, 3) |
-| **DoD-4-6** | [예외 6] Web Share 미지원 시 이미지 자동 다운로드 Fallback | Sprint 4 | ⬜ 대기 |
+| **DoD-4-6** | [예외 6] Web Share 미지원 시 이미지 자동 다운로드 Fallback | Sprint 4 | ✅ 완료 (Sprint 4) |
 | **DoD-5** | DB/로그인/결제 없는 순수 클라이언트 단일 앱 Scope 준수 | 전 스프린트 | ✅ 준수 중 |
 
 ---
