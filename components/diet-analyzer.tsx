@@ -7,13 +7,13 @@ import {
   Scale,
   Target,
   Flame,
-  Activity,
   UploadCloud,
   X,
   AlertCircle,
-  CheckCircle2,
   Zap,
   Info,
+  Loader2,
+  CheckCircle2,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,6 +21,14 @@ import {
   type GoalType,
   type RecommendedNutrition,
 } from '@/lib/nutrition-calc'
+import {
+  analyzeDietWithRetry,
+  type DietAnalysisResult,
+  type AnalysisStep,
+} from '@/lib/ai-client'
+import { LoadingOverlay } from '@/components/common/loading-overlay'
+import { RetryModal } from '@/components/common/retry-modal'
+import { ErrorState } from '@/components/common/error-state'
 
 export function DietAnalyzer() {
   // --- Form States ---
@@ -38,11 +46,19 @@ export function DietAnalyzer() {
     food?: string
   }>({})
 
+  // --- AI Analysis & Exception States (Sprint 2) ---
+  const [analysisStatus, setAnalysisStatus] = useState<AnalysisStep>('idle')
+  const [analysisMessage, setAnalysisMessage] = useState<string>('')
+  const [analysisResult, setAnalysisResult] = useState<DietAnalysisResult | null>(null)
+  const [isRetryModalOpen, setIsRetryModalOpen] = useState<boolean>(false)
+  const [hasDataError, setHasDataError] = useState<boolean>(false)
+
   // --- Input Refs for Auto-Focus on Validation Failure ---
   const heightInputRef = useRef<HTMLInputElement>(null)
   const weightInputRef = useRef<HTMLInputElement>(null)
   const dietTextRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const resultRef = useRef<HTMLDivElement>(null)
 
   // --- Computed Real-time TDEE / Target Preview ---
   const nutritionTargets: RecommendedNutrition | null = useMemo(() => {
@@ -73,7 +89,6 @@ export function DietAnalyzer() {
 
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const val = e.target.value
-    // Prevent exceeding 200 characters
     if (val.length <= 200) {
       setDietText(val)
     } else {
@@ -81,6 +96,9 @@ export function DietAnalyzer() {
     }
     if (errors.food) {
       setErrors((prev) => ({ ...prev, food: undefined }))
+    }
+    if (hasDataError) {
+      setHasDataError(false)
     }
   }
 
@@ -100,6 +118,9 @@ export function DietAnalyzer() {
     if (errors.food) {
       setErrors((prev) => ({ ...prev, food: undefined }))
     }
+    if (hasDataError) {
+      setHasDataError(false)
+    }
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -117,6 +138,50 @@ export function DietAnalyzer() {
   }
 
   // --- Form Validation & Submission ---
+  const runAnalysis = async () => {
+    const parsedHeight = parseFloat(height)
+    const parsedWeight = parseFloat(weight)
+
+    setHasDataError(false)
+
+    try {
+      const result = await analyzeDietWithRetry(
+        {
+          height: parsedHeight,
+          weight: parsedWeight,
+          goal,
+          dietText,
+          imageFile,
+          imagePreview,
+          recommendedNutrition: nutritionTargets,
+        },
+        (status, message) => {
+          setAnalysisStatus(status)
+          if (message) setAnalysisMessage(message)
+        }
+      )
+
+      setAnalysisResult(result)
+      setAnalysisStatus('success')
+
+      // Smooth scroll to result area
+      setTimeout(() => {
+        resultRef.current?.scrollIntoView({ behavior: 'smooth' })
+      }, 150)
+    } catch (error: any) {
+      if (error?.message === 'INVALID_DIET_DATA') {
+        setHasDataError(true)
+        setAnalysisStatus('error')
+        setTimeout(() => {
+          resultRef.current?.scrollIntoView({ behavior: 'smooth' })
+        }, 150)
+      } else {
+        setIsRetryModalOpen(true)
+        setAnalysisStatus('idle')
+      }
+    }
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -152,14 +217,17 @@ export function DietAnalyzer() {
       return
     }
 
-    // Clear errors if all inputs are valid
+    // Clear validation errors
     setErrors({})
 
-    // Sprint 1 Verified Action (Sprint 2 will connect real LLM analysis pipeline)
-    alert(
-      `[Sprint 1 검증 완료]\n- 키: ${height}cm, 몸무게: ${weight}kg\n- 목적: ${goal}\n- 일일 권장 칼로리: ${nutritionTargets?.targetCalories} kcal (탄: ${nutritionTargets?.targetCarbs}g, 단: ${nutritionTargets?.targetProtein}g, 지: ${nutritionTargets?.targetFat}g)\n- 식단 텍스트: ${dietText || '(사진 첨부됨)'}\n\n-> 모든 필수값 및 200자 제한 검증 통과!`
-    )
+    // Trigger AI Analysis Pipeline (Sprint 2)
+    runAnalysis()
   }
+
+  const isAnalyzing =
+    analysisStatus === 'analyzing' ||
+    analysisStatus === 'failed' ||
+    analysisStatus === 'retrying'
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center py-10 px-4 sm:px-6 relative overflow-x-hidden selection:bg-emerald-500 selection:text-slate-950">
@@ -168,6 +236,19 @@ export function DietAnalyzer() {
         <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-emerald-500/10 blur-[120px] rounded-full" />
         <div className="absolute top-1/3 -right-20 w-[400px] h-[400px] bg-cyan-500/10 blur-[100px] rounded-full" />
       </div>
+
+      {/* Loading Overlay (PRD 5.3, 5.4) */}
+      <LoadingOverlay status={analysisStatus} message={analysisMessage} />
+
+      {/* Retry Modal for Network Failure (PRD 5.3) */}
+      <RetryModal
+        isOpen={isRetryModalOpen}
+        onClose={() => setIsRetryModalOpen(false)}
+        onRetry={() => {
+          setIsRetryModalOpen(false)
+          runAnalysis()
+        }}
+      />
 
       <main className="w-full max-w-2xl space-y-8">
         {/* Header Section */}
@@ -224,6 +305,7 @@ export function DietAnalyzer() {
                     step="0.1"
                     placeholder="키 (cm) 입력"
                     value={height}
+                    disabled={isAnalyzing}
                     onChange={handleHeightChange}
                     className={`w-full px-4 py-3 rounded-2xl bg-slate-950/80 border text-white placeholder-slate-600 focus:outline-none text-sm transition-all ${
                       errors.height
@@ -255,6 +337,7 @@ export function DietAnalyzer() {
                     step="0.1"
                     placeholder="몸무게 (kg) 입력"
                     value={weight}
+                    disabled={isAnalyzing}
                     onChange={handleWeightChange}
                     className={`w-full px-4 py-3 rounded-2xl bg-slate-950/80 border text-white placeholder-slate-600 focus:outline-none text-sm transition-all ${
                       errors.weight
@@ -295,6 +378,7 @@ export function DietAnalyzer() {
                   <button
                     key={item.id}
                     type="button"
+                    disabled={isAnalyzing}
                     onClick={() => setGoal(item.id)}
                     className={`py-3 px-2 rounded-2xl text-center border transition-all duration-200 flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
                       isSelected
@@ -310,7 +394,7 @@ export function DietAnalyzer() {
             </div>
           </div>
 
-          {/* Real-time Target Preview (Calculated via BMR/TDEE formula) */}
+          {/* Real-time Target Preview */}
           {nutritionTargets && (
             <div className="p-3.5 rounded-2xl bg-emerald-950/30 border border-emerald-500/20 text-xs text-emerald-300/90 flex items-center justify-between gap-2 animate-in fade-in duration-300">
               <div className="flex items-center gap-2">
@@ -335,7 +419,7 @@ export function DietAnalyzer() {
                 <Flame className="w-3.5 h-3.5 text-emerald-400" />
                 3. 음식 정보 입력 (텍스트 또는 사진)
               </label>
-              {/* Character Counter with Red transition at 200 */}
+              {/* Character Counter (PRD 5.2) */}
               <span
                 className={`text-xs font-mono font-medium transition-colors ${
                   dietText.length >= 200 ? 'text-[#FF0000] font-bold' : 'text-slate-500'
@@ -354,6 +438,7 @@ export function DietAnalyzer() {
                 maxLength={200}
                 placeholder="예: 제육볶음 1인분, 공기밥 1공기, 찌개 약간"
                 value={dietText}
+                disabled={isAnalyzing}
                 onChange={handleTextChange}
                 className={`w-full px-4 py-3 rounded-2xl bg-slate-950/80 border text-white placeholder-slate-600 focus:outline-none text-sm resize-none transition-all ${
                   errors.food
@@ -370,6 +455,7 @@ export function DietAnalyzer() {
                 type="file"
                 accept="image/jpeg,image/png,image/webp"
                 onChange={handleFileChange}
+                disabled={isAnalyzing}
                 className="hidden"
                 id="food-photo-upload"
               />
@@ -400,6 +486,7 @@ export function DietAnalyzer() {
                   </div>
                   <button
                     type="button"
+                    disabled={isAnalyzing}
                     onClick={handleRemoveImage}
                     className="p-1.5 rounded-xl bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-400 transition-colors cursor-pointer"
                     title="사진 삭제"
@@ -419,14 +506,24 @@ export function DietAnalyzer() {
             </div>
           </div>
 
-          {/* Submit Button */}
+          {/* Submit Button (PRD 5.4: Disabled & Spinner during analyzing) */}
           <Button
             type="submit"
             id="analyze-submit-button"
-            className="w-full h-12 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-2xl text-sm transition-all shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 flex items-center justify-center gap-2 cursor-pointer"
+            disabled={isAnalyzing}
+            className="w-full h-12 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-slate-950 font-bold rounded-2xl text-sm transition-all shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 flex items-center justify-center gap-2 cursor-pointer"
           >
-            <Sparkles className="w-4 h-4" />
-            영양 분석하기
+            {isAnalyzing ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
+                <span>AI 분석 진행 중...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4" />
+                <span>영양 분석하기</span>
+              </>
+            )}
           </Button>
         </form>
 
@@ -436,6 +533,72 @@ export function DietAnalyzer() {
           <span>
             입력된 정보는 외부 서버 데이터베이스에 저장되지 않으며, 분석 후 시각적 요약 카드로 생성되어 즉시 공유할 수 있습니다.
           </span>
+        </div>
+
+        {/* Result & Exception Section Anchor (PRD 3.2, 5.5) */}
+        <div ref={resultRef} className="space-y-6 pt-2">
+          {/* PRD 5.5: Data Exception / Gibberish Error State */}
+          {hasDataError && (
+            <ErrorState
+              onRetry={() => {
+                setHasDataError(false)
+                dietTextRef.current?.focus()
+              }}
+            />
+          )}
+
+          {/* Sprint 2 AI Analysis Result Integration Check Banner */}
+          {analysisResult && !hasDataError && (
+            <section
+              aria-label="분석 결과 요약"
+              className="bg-slate-900/90 border border-emerald-500/30 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 animate-in fade-in duration-300"
+            >
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div className="flex items-center gap-2 text-emerald-400 font-bold text-base">
+                  <CheckCircle2 className="w-5 h-5" />
+                  <span>AI 식단 분석 완료 (Sprint 2 연동 완료)</span>
+                </div>
+                <span className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full font-medium">
+                  {analysisResult.totalCalories.toLocaleString()} kcal
+                </span>
+              </div>
+
+              {/* 1-Line Comment */}
+              <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 text-xs sm:text-sm text-slate-200 leading-relaxed font-medium">
+                💬 {analysisResult.summaryComment}
+              </div>
+
+              {/* Macronutrient Pills */}
+              <div className="grid grid-cols-3 gap-3 text-center">
+                <div className="bg-slate-950/60 border border-slate-800 p-3 rounded-2xl">
+                  <span className="text-[10px] text-slate-400 uppercase font-semibold">탄수화물</span>
+                  <p className="text-base font-bold text-white mt-0.5">{analysisResult.carbs}g</p>
+                </div>
+                <div className="bg-slate-950/60 border border-slate-800 p-3 rounded-2xl">
+                  <span className="text-[10px] text-slate-400 uppercase font-semibold">단백질</span>
+                  <p className="text-base font-bold text-emerald-400 mt-0.5">{analysisResult.protein}g</p>
+                </div>
+                <div className="bg-slate-950/60 border border-slate-800 p-3 rounded-2xl">
+                  <span className="text-[10px] text-slate-400 uppercase font-semibold">지방</span>
+                  <p className="text-base font-bold text-white mt-0.5">{analysisResult.fat}g</p>
+                </div>
+              </div>
+
+              {/* Warning Badges */}
+              {analysisResult.warnings && analysisResult.warnings.length > 0 && (
+                <div className="space-y-1.5 pt-1">
+                  {analysisResult.warnings.map((w, idx) => (
+                    <p
+                      key={idx}
+                      className="text-xs font-medium text-amber-300/90 bg-amber-500/10 border border-amber-500/20 rounded-xl px-3 py-2"
+                    >
+                      {w}
+                    </p>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
         </div>
 
         {/* Footer */}
