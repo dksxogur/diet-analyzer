@@ -1,10 +1,21 @@
 import { Analytics } from '@vercel/analytics/next'
-import { Noto_Sans_KR } from 'next/font/google'
+import { Plus_Jakarta_Sans, Noto_Sans_KR } from 'next/font/google'
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
 import { Toaster } from '@/components/ui/sonner'
 
-const notoSansKr = Noto_Sans_KR({ subsets: ['latin'], variable: '--font-noto-sans-kr' })
+// Latin UI type (design.md §3). Hangul falls through to Noto Sans KR via --font-sans.
+const plusJakarta = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  variable: '--font-plus-jakarta',
+  display: 'swap',
+})
+
+const notoSansKr = Noto_Sans_KR({
+  subsets: ['latin'],
+  variable: '--font-noto-sans-kr',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
   title: 'Nutri Snap | 1분 식단 칼로리 & 영양 균형 추정기',
@@ -29,11 +40,8 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  colorScheme: 'light dark',
-  themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
-  ],
+  colorScheme: 'light',
+  themeColor: '#f8f9ff',
 }
 
 export default function RootLayout({
@@ -43,7 +51,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko" className="bg-background">
-      <body className={`${notoSansKr.variable} antialiased font-sans`}>
+      <body
+        className={`${plusJakarta.variable} ${notoSansKr.variable} antialiased font-sans`}
+      >
         {children}
         <Toaster />
         {process.env.NODE_ENV === 'production' && <Analytics />}

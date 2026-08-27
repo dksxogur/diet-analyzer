@@ -16,6 +16,7 @@ export async function generateCardBlob(elementId: string = 'nutri-snap-share-car
     quality: 0.95,
     pixelRatio: 2, // 2x scale for high crisp retina display
     cacheBust: true,
+    backgroundColor: '#ffffff', // pin white so the light card never exports transparent
     style: {
       transform: 'scale(1)',
       transformOrigin: 'top left',

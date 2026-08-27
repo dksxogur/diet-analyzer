@@ -233,12 +233,18 @@ export function DietAnalyzer() {
     analysisStatus === 'retrying'
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col items-center py-10 px-4 sm:px-6 relative overflow-x-hidden selection:bg-emerald-500 selection:text-slate-950">
-      {/* Background glowing gradients */}
-      <div className="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
-        <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-emerald-500/10 blur-[120px] rounded-full" />
-        <div className="absolute top-1/3 -right-20 w-[400px] h-[400px] bg-cyan-500/10 blur-[100px] rounded-full" />
-      </div>
+    <div className="min-h-screen bg-surface text-on-surface flex flex-col items-center pb-16 px-4 sm:px-6 relative overflow-x-hidden selection:bg-primary selection:text-white">
+      {/* Top app bar (D5) — visual only, no navigation targets */}
+      <header className="sticky top-0 z-40 w-full border-b border-outline bg-surface/85 backdrop-blur-sm">
+        <div className="mx-auto flex h-16 max-w-[390px] items-center justify-center gap-2 px-5 md:max-w-[600px]">
+          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <Sparkles className="h-4 w-4" />
+          </span>
+          <span className="text-lg font-extrabold tracking-tight text-navy">
+            Nutri <span className="text-primary">Snap</span>
+          </span>
+        </div>
+      </header>
 
       {/* Loading Overlay (PRD 5.3, 5.4) */}
       <LoadingOverlay status={analysisStatus} message={analysisMessage} />
@@ -253,17 +259,17 @@ export function DietAnalyzer() {
         }}
       />
 
-      <main className="w-full max-w-2xl space-y-8">
+      <main className="w-full max-w-[390px] md:max-w-[600px] space-y-8 pt-8">
         {/* Header Section */}
-        <header className="text-center space-y-3 pt-2">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold tracking-wide shadow-inner">
+        <header className="text-center space-y-3">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-semibold tracking-wide">
             <Sparkles className="w-3.5 h-3.5" />
             1분 식단 칼로리 & 영양 균형 추정기
           </div>
-          <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
-            Nutri <span className="text-emerald-400">Snap</span>
+          <h1 className="type-display">
+            식단 분석, 이제 <span className="text-primary">3초</span>면 끝.
           </h1>
-          <p className="text-slate-400 text-sm sm:text-base max-w-md mx-auto leading-relaxed">
+          <p className="text-body text-sm sm:text-base max-w-md mx-auto leading-relaxed">
             신체 정보와 오늘 먹은 식단을 입력하면, 권장 칼로리 대비 영양 균형을 즉시 분석하고 요약 카드로 공유합니다.
           </p>
         </header>
@@ -272,27 +278,27 @@ export function DietAnalyzer() {
         <form
           onSubmit={handleSubmit}
           noValidate
-          className="bg-slate-900/90 backdrop-blur-xl border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/60 space-y-6 transition-all"
+          className="bg-surface-container border border-outline rounded-xl p-6 custom-shadow space-y-6 transition-all"
         >
-          <div className="flex items-center justify-between border-b border-slate-800/80 pb-4">
+          <div className="flex items-center justify-between border-b border-outline pb-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-sm">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
                 <Utensils className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-base sm:text-lg font-bold text-white">식단 & 신체 정보 입력</h2>
-                <p className="text-xs text-slate-400">로그인 없이 즉시 하루 권장 대비 영양을 진단합니다.</p>
+                <h2 className="type-title">식단 &amp; 신체 정보 입력</h2>
+                <p className="text-xs text-label">로그인 없이 즉시 하루 권장 대비 영양을 진단합니다.</p>
               </div>
             </div>
-            <span className="text-[11px] font-medium text-emerald-400/90 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
+            <span className="text-[11px] font-medium text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20">
               단일 화면 App
             </span>
           </div>
 
           {/* 1. Body Info (Height, Weight) */}
           <div className="space-y-3">
-            <label className="text-xs font-semibold text-slate-200 flex items-center gap-1.5 uppercase tracking-wider">
-              <Scale className="w-3.5 h-3.5 text-emerald-400" />
+            <label className="type-label flex items-center gap-1.5 text-navy">
+              <Scale className="w-3.5 h-3.5 text-primary" />
               1. 신체 정보 (필수)
             </label>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -310,18 +316,18 @@ export function DietAnalyzer() {
                     value={height}
                     disabled={isAnalyzing}
                     onChange={handleHeightChange}
-                    className={`w-full px-4 py-3 rounded-2xl bg-slate-950/80 border text-white placeholder-slate-600 focus:outline-none text-sm transition-all ${
+                    className={`w-full px-4 py-3 rounded-lg bg-surface-container-low border text-on-surface placeholder-label focus:outline-none text-sm transition-all ${
                       errors.height
-                        ? 'border-[#FF0000] focus:border-[#FF0000] focus:ring-1 focus:ring-[#FF0000]'
-                        : 'border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500'
+                        ? 'border-error focus:border-error focus:ring-1 focus:ring-error'
+                        : 'border-outline focus:border-primary focus:ring-1 focus:ring-primary'
                     }`}
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-500 font-medium">
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-label font-medium">
                     cm
                   </span>
                 </div>
                 {errors.height && (
-                  <p className="text-xs text-[#FF0000] font-medium flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
+                  <p className="text-xs text-error font-medium flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
                     <AlertCircle className="w-3 h-3 shrink-0" />
                     {errors.height}
                   </p>
@@ -342,18 +348,18 @@ export function DietAnalyzer() {
                     value={weight}
                     disabled={isAnalyzing}
                     onChange={handleWeightChange}
-                    className={`w-full px-4 py-3 rounded-2xl bg-slate-950/80 border text-white placeholder-slate-600 focus:outline-none text-sm transition-all ${
+                    className={`w-full px-4 py-3 rounded-lg bg-surface-container-low border text-on-surface placeholder-label focus:outline-none text-sm transition-all ${
                       errors.weight
-                        ? 'border-[#FF0000] focus:border-[#FF0000] focus:ring-1 focus:ring-[#FF0000]'
-                        : 'border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500'
+                        ? 'border-error focus:border-error focus:ring-1 focus:ring-error'
+                        : 'border-outline focus:border-primary focus:ring-1 focus:ring-primary'
                     }`}
                   />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-slate-500 font-medium">
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs text-label font-medium">
                     kg
                   </span>
                 </div>
                 {errors.weight && (
-                  <p className="text-xs text-[#FF0000] font-medium flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
+                  <p className="text-xs text-error font-medium flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
                     <AlertCircle className="w-3 h-3 shrink-0" />
                     {errors.weight}
                   </p>
@@ -364,8 +370,8 @@ export function DietAnalyzer() {
 
           {/* 2. Goal Selector */}
           <div className="space-y-2.5">
-            <label className="text-xs font-semibold text-slate-200 flex items-center gap-1.5 uppercase tracking-wider">
-              <Target className="w-3.5 h-3.5 text-emerald-400" />
+            <label className="type-label flex items-center gap-1.5 text-navy">
+              <Target className="w-3.5 h-3.5 text-primary" />
               2. 식단 목적 (택 1)
             </label>
             <div className="grid grid-cols-3 gap-2 sm:gap-3">
@@ -383,14 +389,14 @@ export function DietAnalyzer() {
                     type="button"
                     disabled={isAnalyzing}
                     onClick={() => setGoal(item.id)}
-                    className={`py-3 px-2 rounded-2xl text-center border transition-all duration-200 flex flex-col items-center justify-center gap-0.5 cursor-pointer ${
+                    className={`py-3 px-2 rounded-full text-center border transition-all duration-200 flex flex-col items-center justify-center gap-0.5 cursor-pointer active:scale-95 ${
                       isSelected
-                        ? 'bg-emerald-500/15 border-emerald-500 text-emerald-300 shadow-md shadow-emerald-950/40 ring-1 ring-emerald-500/50'
-                        : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                        ? 'bg-primary border-primary text-white shadow-sm'
+                        : 'bg-surface-container border-outline text-body hover:bg-surface-variant hover:text-navy'
                     }`}
                   >
                     <span className="text-xs sm:text-sm font-semibold">{item.label}</span>
-                    <span className="text-[10px] sm:text-xs opacity-75">{item.desc}</span>
+                    <span className="text-[10px] sm:text-xs opacity-80">{item.desc}</span>
                   </button>
                 )
               })}
@@ -399,17 +405,18 @@ export function DietAnalyzer() {
 
           {/* Real-time Target Preview */}
           {nutritionTargets && (
-            <div className="p-3.5 rounded-2xl bg-emerald-950/30 border border-emerald-500/20 text-xs text-emerald-300/90 flex items-center justify-between gap-2 animate-in fade-in duration-300">
+            <div className="p-3.5 rounded-lg bg-primary/5 border border-primary/20 text-xs text-body flex items-center justify-between gap-2 animate-in fade-in duration-300">
               <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-emerald-400 shrink-0" />
+                <Zap className="w-4 h-4 text-primary shrink-0" />
                 <span>
-                  <strong>목표 권장량:</strong> {nutritionTargets.targetCalories.toLocaleString()} kcal
-                  <span className="hidden sm:inline text-emerald-400/60 ml-2">
+                  <strong className="text-navy">목표 권장량:</strong>{' '}
+                  {nutritionTargets.targetCalories.toLocaleString()} kcal
+                  <span className="hidden sm:inline text-label ml-2">
                     (탄 {nutritionTargets.targetCarbs}g · 단 {nutritionTargets.targetProtein}g · 지 {nutritionTargets.targetFat}g)
                   </span>
                 </span>
               </div>
-              <span className="text-[10px] text-emerald-400/80 bg-emerald-500/10 px-2 py-0.5 rounded-md border border-emerald-500/20 shrink-0">
+              <span className="text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20 shrink-0">
                 기초대사량 {nutritionTargets.bmr} kcal
               </span>
             </div>
@@ -418,14 +425,14 @@ export function DietAnalyzer() {
           {/* 3. Food Info (Text & Photo) */}
           <div className="space-y-3">
             <div className="flex justify-between items-center">
-              <label className="text-xs font-semibold text-slate-200 flex items-center gap-1.5 uppercase tracking-wider">
-                <Flame className="w-3.5 h-3.5 text-emerald-400" />
+              <label className="type-label flex items-center gap-1.5 text-navy">
+                <Flame className="w-3.5 h-3.5 text-primary" />
                 3. 음식 정보 입력 (텍스트 또는 사진)
               </label>
               {/* Character Counter (PRD 5.2) */}
               <span
                 className={`text-xs font-mono font-medium transition-colors ${
-                  dietText.length >= 200 ? 'text-[#FF0000] font-bold' : 'text-slate-500'
+                  dietText.length >= 200 ? 'text-error font-bold' : 'text-label'
                 }`}
               >
                 ({dietText.length} / 200)
@@ -443,10 +450,10 @@ export function DietAnalyzer() {
                 value={dietText}
                 disabled={isAnalyzing}
                 onChange={handleTextChange}
-                className={`w-full px-4 py-3 rounded-2xl bg-slate-950/80 border text-white placeholder-slate-600 focus:outline-none text-sm resize-none transition-all ${
+                className={`w-full px-4 py-3 rounded-lg bg-surface-container-low border text-on-surface placeholder-label focus:outline-none text-sm resize-none transition-all ${
                   errors.food
-                    ? 'border-[#FF0000] focus:border-[#FF0000] focus:ring-1 focus:ring-[#FF0000]'
-                    : 'border-slate-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500'
+                    ? 'border-error focus:border-error focus:ring-1 focus:ring-error'
+                    : 'border-outline focus:border-primary focus:ring-1 focus:ring-primary'
                 }`}
               />
             </div>
@@ -466,24 +473,24 @@ export function DietAnalyzer() {
               {!imagePreview ? (
                 <label
                   htmlFor="food-photo-upload"
-                  className="flex items-center justify-center gap-2 w-full py-3.5 px-4 rounded-2xl bg-slate-950/50 border border-dashed border-slate-800 hover:border-emerald-500/50 hover:bg-slate-950/80 text-slate-400 hover:text-slate-200 text-xs font-medium cursor-pointer transition-all group"
+                  className="flex items-center justify-center gap-2 w-full py-3.5 px-4 rounded-lg bg-surface-container-low border border-dashed border-outline hover:border-primary/50 hover:bg-surface-variant text-body hover:text-navy text-xs font-medium cursor-pointer transition-all group"
                 >
-                  <UploadCloud className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 transition-colors" />
+                  <UploadCloud className="w-4 h-4 text-label group-hover:text-primary transition-colors" />
                   <span>음식 사진 첨부하기 (.jpg, .png, .webp)</span>
                 </label>
               ) : (
-                <div className="relative rounded-2xl overflow-hidden border border-slate-700/80 bg-slate-950/80 p-2 flex items-center gap-3">
+                <div className="relative rounded-lg overflow-hidden border border-outline bg-surface-container-low p-2 flex items-center gap-3">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={imagePreview}
                     alt="식단 사진 미리보기"
-                    className="w-14 h-14 object-cover rounded-xl border border-slate-800 shrink-0"
+                    className="w-14 h-14 object-cover rounded-lg border border-outline shrink-0"
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-white font-medium truncate">
+                    <p className="text-xs text-navy font-medium truncate">
                       {imageFile?.name || '업로드된 식단 이미지'}
                     </p>
-                    <p className="text-[10px] text-slate-400">
+                    <p className="text-[10px] text-label">
                       {imageFile ? `${(imageFile.size / 1024).toFixed(1)} KB` : '이미지 준비됨'}
                     </p>
                   </div>
@@ -491,7 +498,7 @@ export function DietAnalyzer() {
                     type="button"
                     disabled={isAnalyzing}
                     onClick={handleRemoveImage}
-                    className="p-1.5 rounded-xl bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-400 transition-colors cursor-pointer"
+                    className="p-1.5 rounded-lg bg-surface-variant hover:bg-error/10 hover:text-error text-body transition-colors cursor-pointer"
                     title="사진 삭제"
                   >
                     <X className="w-4 h-4" />
@@ -501,7 +508,7 @@ export function DietAnalyzer() {
 
               {/* Food Error message */}
               {errors.food && (
-                <p className="text-xs text-[#FF0000] font-medium flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
+                <p className="text-xs text-error font-medium flex items-center gap-1 animate-in fade-in slide-in-from-top-1">
                   <AlertCircle className="w-3 h-3 shrink-0" />
                   {errors.food}
                 </p>
@@ -513,12 +520,13 @@ export function DietAnalyzer() {
           <Button
             type="submit"
             id="analyze-submit-button"
+            size="xl"
             disabled={isAnalyzing}
-            className="w-full h-12 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-slate-950 font-bold rounded-2xl text-sm transition-all shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 flex items-center justify-center gap-2 cursor-pointer"
+            className="w-full cursor-pointer"
           >
             {isAnalyzing ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
+                <Loader2 className="w-4 h-4 animate-spin" />
                 <span>AI 분석 진행 중...</span>
               </>
             ) : (
@@ -531,8 +539,8 @@ export function DietAnalyzer() {
         </form>
 
         {/* Informational Guidance */}
-        <div className="flex items-start gap-2.5 px-4 py-3 rounded-2xl bg-slate-900/40 border border-slate-800/60 text-slate-400 text-xs leading-relaxed">
-          <Info className="w-4 h-4 text-emerald-400/80 shrink-0 mt-0.5" />
+        <div className="flex items-start gap-2.5 px-4 py-3 rounded-lg bg-surface-container border border-outline text-body text-xs leading-relaxed">
+          <Info className="w-4 h-4 text-primary shrink-0 mt-0.5" />
           <span>
             입력된 정보는 외부 서버 데이터베이스에 저장되지 않으며, 분석 후 시각적 요약 카드로 생성되어 즉시 공유할 수 있습니다.
           </span>
@@ -563,11 +571,11 @@ export function DietAnalyzer() {
               {/* 2. Visual Summary Share Card Section */}
               <section className="space-y-4">
                 <div className="text-center space-y-1">
-                  <h3 className="text-base font-bold text-white flex items-center justify-center gap-2">
-                    <Sparkles className="w-4 h-4 text-emerald-400" />
+                  <h3 className="text-base font-bold text-navy flex items-center justify-center gap-2">
+                    <Sparkles className="w-4 h-4 text-primary" />
                     시각적 요약 공유 카드
                   </h3>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-label">
                     SNS 및 메신저 공유에 최적화된 결과 카드입니다.
                   </p>
                 </div>
@@ -588,7 +596,7 @@ export function DietAnalyzer() {
         </div>
 
         {/* Footer */}
-        <footer className="text-center text-xs text-slate-600 pb-4">
+        <footer className="text-center text-xs text-label pb-4">
           © 2026 Nutri Snap. All rights reserved.
         </footer>
       </main>

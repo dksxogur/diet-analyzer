@@ -57,7 +57,7 @@ export function ShareActions({ summaryComment }: ShareActionsProps) {
           type="button"
           onClick={handleCopy}
           disabled={isAnyLoading}
-          className="h-11 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center justify-center gap-1.5 shadow-md shadow-emerald-950/40 transition-all cursor-pointer"
+          className="h-11 text-xs flex items-center justify-center gap-1.5 cursor-pointer"
         >
           {copying ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -75,12 +75,12 @@ export function ShareActions({ summaryComment }: ShareActionsProps) {
           onClick={handleShare}
           disabled={isAnyLoading}
           variant="outline"
-          className="h-11 rounded-2xl border-slate-700 bg-slate-900/90 text-slate-200 hover:bg-slate-800 hover:text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer"
+          className="h-11 font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
         >
           {sharing ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
           ) : (
-            <Share2 className="w-3.5 h-3.5 text-cyan-400" />
+            <Share2 className="w-3.5 h-3.5 text-primary" />
           )}
           <span>SNS/채팅 공유</span>
         </Button>
@@ -91,18 +91,18 @@ export function ShareActions({ summaryComment }: ShareActionsProps) {
           onClick={handleDownload}
           disabled={isAnyLoading}
           variant="outline"
-          className="h-11 rounded-2xl border-slate-700 bg-slate-900/90 text-slate-200 hover:bg-slate-800 hover:text-white font-semibold text-xs flex items-center justify-center gap-1.5 shadow-md transition-all cursor-pointer"
+          className="h-11 font-semibold text-xs flex items-center justify-center gap-1.5 cursor-pointer"
         >
           {downloading ? (
             <Loader2 className="w-3.5 h-3.5 animate-spin" />
           ) : (
-            <Download className="w-3.5 h-3.5 text-emerald-400" />
+            <Download className="w-3.5 h-3.5 text-primary" />
           )}
           <span>이미지 저장</span>
         </Button>
       </div>
 
-      <p className="text-center text-[11px] text-slate-500">
+      <p className="text-center text-[11px] text-label">
         💡 1클릭으로 결과 카드를 복사하거나 다운로드하여 친구나 트레이너와 공유하세요.
       </p>
     </div>
