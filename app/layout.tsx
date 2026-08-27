@@ -7,25 +7,24 @@ import { Toaster } from '@/components/ui/sonner'
 const notoSansKr = Noto_Sans_KR({ subsets: ['latin'], variable: '--font-noto-sans-kr' })
 
 export const metadata: Metadata = {
-  title: '1분 식단 분석기 | Nutri Snap',
-  description: '키, 몸무게, 목적과 오늘 먹은 식단을 입력해 영양 균형을 바로 확인하세요.',
-  generator: 'v0.app',
+  title: 'Nutri Snap | 1분 식단 칼로리 & 영양 균형 추정기',
+  description: '로그인 없이 키, 몸무게, 목적과 식단을 입력하여 일일 권장량 대비 영양 균형을 즉시 분석하고 1클릭으로 카드를 공유하세요.',
+  keywords: ['식단분석', '칼로리계산기', '탄단지비율', '다이어트', '벌크업', 'NutriSnap', '영양균형'],
+  authors: [{ name: 'Nutri Snap Team' }],
+  openGraph: {
+    title: 'Nutri Snap | 1분 식단 칼로리 & 영양 균형 추정기',
+    description: '신체 정보와 오늘 먹은 음식을 입력하면 권장 칼로리 대비 영양 밸런스를 즉시 분석합니다.',
+    type: 'website',
+    locale: 'ko_KR',
+    siteName: 'Nutri Snap',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Nutri Snap | 1분 식단 칼로리 & 영양 균형 추정기',
+    description: '신체 정보와 오늘 먹은 음식을 입력하면 권장 칼로리 대비 영양 밸런스를 즉시 분석합니다.',
+  },
   icons: {
-    icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
-    ],
-    apple: '/apple-icon.png',
+    icon: '/icon.svg',
   },
 }
 

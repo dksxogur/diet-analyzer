@@ -1,10 +1,10 @@
 # [개발 계획서] 한 페이지 식단 칼로리 & 영양 균형 추정기 (Diet Analyzer)
 
-> **문서 버전**: v1.4.0  
+> **문서 버전**: v1.5.0 (Final Release)  
 > **기준 문서**: [PRD.md](../PRD.md)  
 > **최초 생성**: 2026-08-26  
-> **최종 수정**: 2026-08-27 (Sprint 4 완료)  
-> **문서 상태**: Sprint 4 Completed / Sprint 5 Ready  
+> **최종 수정**: 2026-08-27 (Sprint 5 E2E 완료 및 프로덕션 빌드 통과)  
+> **문서 상태**: All Sprints Completed / Production Ready 🎉  
 
 ---
 
@@ -23,21 +23,21 @@
 | **Image Generation** | `html-to-image` / Canvas API | 결과 DOM을 고해상도 PNG 이미지로 즉시 변환 (2x Retina 지원) |
 | **Share & Export** | Async Clipboard API, Web Share API | 1클릭 이미지 클립보드 복사, 모바일 OS 공유 시트, PNG 다운로드 Fallback |
 
-### 1.3 디렉토리 구조 현황 및 계획
+### 1.3 디렉토리 구조 현황
 ```plaintext
 diet-analyzer/
 ├── docs/
-│   └── DEVELOPMENT_PLAN.md      # 본 개발 계획서 (v1.4.0)
+│   └── DEVELOPMENT_PLAN.md      # 본 개발 계획서 (v1.5.0 Final)
 ├── PRD.md                       # 제품 요구사항 정의서
 ├── app/
-│   ├── layout.tsx               # 루트 레이아웃 & 폰트/테마 & Toaster
+│   ├── layout.tsx               # 루트 레이아웃 & 폰트/테마 & SEO 메타데이터 & Toaster
 │   ├── page.tsx                 # 단일 페이지 엔트리포인트
 │   ├── globals.css              # 전역 스타일 및 디자인 토큰
 │   └── api/
 │       └── analyze/
 │           └── route.ts         # [Sprint 2] AI 분석 Next.js Route Handler
 ├── components/
-│   ├── diet-analyzer.tsx        # [Sprint 1-4] 메인 통합 컨테이너 컴포넌트
+│   ├── diet-analyzer.tsx        # [Sprint 1-5] 메인 통합 컨테이너 컴포넌트
 │   ├── common/
 │   │   ├── loading-overlay.tsx  # [Sprint 2] "AI 분석 중..." 스피너 오버레이 (PRD 5.4)
 │   │   ├── retry-modal.tsx      # [Sprint 2] "AI 응답 실패 -> 재분석 중" 최종 실패 알림 (PRD 5.3)
@@ -61,7 +61,7 @@ diet-analyzer/
 
 ```mermaid
 gantt
-    title Diet Analyzer 개발 로드맵 (5 Sprint)
+    title Diet Analyzer 개발 로드맵 (5 Sprint 전수 완료)
     dateFormat  YYYY-MM-DD
     section Sprint 1
     기반 유틸리티 & 입력 폼 UI/UX       :done, s1, 2026-08-26, 1d
@@ -72,7 +72,7 @@ gantt
     section Sprint 4
     1클릭 공유/복사/다운로드 Fallback    :done, s4, after s3, 1d
     section Sprint 5
-    E2E 검증, DoD 달성 및 최적화        :active, s5, after s4, 1d
+    E2E 검증, DoD 달성 및 최적화        :done, s5, after s4, 1d
 ```
 
 ---
@@ -143,22 +143,22 @@ gantt
 
 ---
 
-### 🏃 Sprint 5: E2E 종합 검증, DoD 체크리스트 검증 및 UI 폴리싱
+### 🏃 Sprint 5: E2E 종합 검증, DoD 체크리스트 검증 및 UI 폴리싱 (완료)
 
 * **목표**: PRD 6장의 완료 조건(DoD) 전 항목 검증 및 예외 케이스 5종 전수 테스트 완료.
 * **주요 태스크**:
-  1. **[DoD Check 1]** 단일 화면 내 입력 -> 분석 -> 결과 -> 공유 완결 여부 검증
-  2. **[DoD Check 2]** 키, 몸무게, 목적별 TDEE 산출 및 탄단지 영양소/경고 문구 정확도 검증
-  3. **[DoD Check 3]** 결과 카드의 1클릭 클립보드 복사 및 Web Share 동작 검증
-  4. **[DoD Check 4]** 예외 처리 5종 전수 시나리오 테스트:
+  1. **[DoD Check 1]** 단일 화면 내 입력 -> 분석 -> 결과 -> 공유 완결 여부 검증 - [완료]
+  2. **[DoD Check 2]** 키, 몸무게, 목적별 TDEE 산출 및 탄단지 영양소/경고 문구 정확도 검증 - [완료]
+  3. **[DoD Check 3]** 결과 카드의 1클릭 클립보드 복사 및 Web Share 동작 검증 - [완료]
+  4. **[DoD Check 4]** 예외 처리 5종 전수 시나리오 테스트: - [완료]
      - [x] 필수값 누락 시 빨간색 경고 문구 & 포커싱
      - [x] 200자 제한 및 인디케이터 색상 변경
      - [x] "AI 분석 중..." 로딩 오버레이
      - [x] "AI 응답 실패" -> "AI 재분석 중..." 자동 재시도
      - [x] 비정상 입력값 재점검 유도 UI
      - [x] Web Share 미지원 환경 다운로드 Fallback
-  5. **[DoD Check 5]** Out of Scope 준수 (DB/로그인/결제 서버 없는 순수 클라이언트 앱)
-  6. **[Polish]** 모바일 및 데스크톱 반응형 뷰포트 정합성 및 부드러운 애니메이션 적용
+  5. **[DoD Check 5]** Out of Scope 준수 (DB/로그인/결제 서버 없는 순수 클라이언트 앱) - [완료]
+  6. **[Polish]** 모바일 및 데스크톱 반응형 뷰포트 정합성, Open Graph SEO 메타데이터 적용 - [완료]
 
 ---
 
@@ -166,16 +166,16 @@ gantt
 
 | 번호 | 요구사항 항목 | 스프린트 | 검증 상태 |
 | :---: | :--- | :---: | :---: |
-| **DoD-1** | 단일 화면(Single-Page) 구성 완료 | Sprint 1, 3 | ✅ 완료 (Sprint 1, 3) |
-| **DoD-2** | TDEE 산출 및 AI 탄단지/칼로리/경고 분석 출력 | Sprint 1, 2, 3 | ✅ 완료 (Sprint 1, 2, 3) |
-| **DoD-3** | 요약 결과 카드 1클릭 클립보드 복사 & Web Share 연동 | Sprint 4 | ✅ 완료 (Sprint 4) |
-| **DoD-4-1** | [예외 1] 빈 입력 시 `#FF0000` 경고 문구 및 포커스 | Sprint 1 | ✅ 완료 (Sprint 1) |
-| **DoD-4-2** | [예외 2] 글자수 인디케이터 (0/200) 및 초과 제한/빨간색 전환 | Sprint 1 | ✅ 완료 (Sprint 1) |
-| **DoD-4-3** | [예외 3] AI 응답 지연 시 "AI 분석 중..." 스피너 오버레이 | Sprint 2 | ✅ 완료 (Sprint 2) |
-| **DoD-4-4** | [예외 4] AI 응답 실패 시 1초 후 "AI 재분석 중..." 1회 자동 재시도 | Sprint 2 | ✅ 완료 (Sprint 2) |
-| **DoD-4-5** | [예외 5] 비정상 데이터 시 재점검 유도 및 재시도 버튼 | Sprint 2, 3 | ✅ 완료 (Sprint 2, 3) |
-| **DoD-4-6** | [예외 6] Web Share 미지원 시 이미지 자동 다운로드 Fallback | Sprint 4 | ✅ 완료 (Sprint 4) |
-| **DoD-5** | DB/로그인/결제 없는 순수 클라이언트 단일 앱 Scope 준수 | 전 스프린트 | ✅ 준수 중 |
+| **DoD-1** | 단일 화면(Single-Page) 구성 완료 | Sprint 1, 3, 5 | ✅ 100% 완료 |
+| **DoD-2** | TDEE 산출 및 AI 탄단지/칼로리/경고 분석 출력 | Sprint 1, 2, 3, 5 | ✅ 100% 완료 |
+| **DoD-3** | 요약 결과 카드 1클릭 클립보드 복사 & Web Share 연동 | Sprint 4, 5 | ✅ 100% 완료 |
+| **DoD-4-1** | [예외 1] 빈 입력 시 `#FF0000` 경고 문구 및 포커스 | Sprint 1, 5 | ✅ 100% 완료 |
+| **DoD-4-2** | [예외 2] 글자수 인디케이터 (0/200) 및 초과 제한/빨간색 전환 | Sprint 1, 5 | ✅ 100% 완료 |
+| **DoD-4-3** | [예외 3] AI 응답 지연 시 "AI 분석 중..." 스피너 오버레이 | Sprint 2, 5 | ✅ 100% 완료 |
+| **DoD-4-4** | [예외 4] AI 응답 실패 시 1초 후 "AI 재분석 중..." 1회 자동 재시도 | Sprint 2, 5 | ✅ 100% 완료 |
+| **DoD-4-5** | [예외 5] 비정상 데이터 시 재점검 유도 및 재시도 버튼 | Sprint 2, 3, 5 | ✅ 100% 완료 |
+| **DoD-4-6** | [예외 6] Web Share 미지원 시 이미지 자동 다운로드 Fallback | Sprint 4, 5 | ✅ 100% 완료 |
+| **DoD-5** | DB/로그인/결제 없는 순수 클라이언트 단일 앱 Scope 준수 | 전 스프린트 | ✅ 100% 준수 |
 
 ---
 
