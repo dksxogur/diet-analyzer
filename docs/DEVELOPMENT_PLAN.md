@@ -1,10 +1,10 @@
 # [개발 계획서] 한 페이지 식단 칼로리 & 영양 균형 추정기 (Diet Analyzer)
 
-> **문서 버전**: v1.2.0  
+> **문서 버전**: v1.3.0  
 > **기준 문서**: [PRD.md](../PRD.md)  
 > **최초 생성**: 2026-08-26  
-> **최종 수정**: 2026-08-27 (Sprint 2 완료 및 커밋 반영)  
-> **문서 상태**: Sprint 2 Completed / Sprint 3 Ready  
+> **최종 수정**: 2026-08-27 (Sprint 3 완료)  
+> **문서 상태**: Sprint 3 Completed / Sprint 4 Ready  
 
 ---
 
@@ -68,9 +68,9 @@ gantt
     section Sprint 2
     AI 분석 엔진 & 예외/재시도 파이프라인 :done, s2, after s1, 1d
     section Sprint 3
-    영양 분석 대시보드 & 시각적 카드    :active, s3, after s2, 1d
+    영양 분석 대시보드 & 시각적 카드    :done, s3, after s2, 1d
     section Sprint 4
-    1클릭 공유/복사/다운로드 Fallback    :s4, after s3, 1d
+    1클릭 공유/복사/다운로드 Fallback    :active, s4, after s3, 1d
     section Sprint 5
     E2E 검증, DoD 달성 및 최적화        :s5, after s4, 1d
 ```
@@ -108,17 +108,19 @@ gantt
 
 ---
 
-### 🏃 Sprint 3: 영양 분석 결과 대시보드 & 시각적 공유 카드 컴포넌트
+### 🏃 Sprint 3: 영양 분석 결과 대시보드 & 시각적 공유 카드 컴포넌트 (완료)
 
 * **목표**: 분석 결과와 권장량을 비교하는 세련된 대시보드를 렌더링하고, 이미지 캡처용 요약 카드를 시각적으로 구현한다.
 * **주요 태스크**:
-  1. **[UI] 영양 분석 요약 패널 (`components/result/summary-panel.tsx`)**
+  1. **[UI] 영양 분석 요약 패널 (`components/result/summary-panel.tsx`)** - [완료]
      - 총 추정 칼로리 (kcal) 및 권장 칼로리 대비 섭취 비율(%)
      - 탄수화물, 단백질, 지방 섭취량(g) 및 권장치 대비 진행 그래프 바
      - 과다/부족 영양소 상태에 따른 다이내믹 경고 뱃지 (예: "⚠️ 단백질이 권장량 대비 부족합니다.")
-  2. **[UI] 시각적 요약 공유 카드 컴포넌트 (`components/result/share-card.tsx`)**
-     - SNS 공유에 최적화된 고품질 비주얼 디자인 (카드 비율, 타이포그래피, 그래디언트 배경)
-     - 사용자 목표, 섭취 칼로리/영양 밸런스, AI 1줄 코멘트, 로고 워터마크 포함
+     - 음식별 세부 영양소 분해 리스트
+  2. **[UI] 시각적 요약 공유 카드 컴포넌트 (`components/result/share-card.tsx`)** - [완료]
+     - SNS 공유에 최적화된 고품질 비주얼 디자인 (에메랄드/시안 그래디언트, 브랜딩 워터마크)
+     - 사용자 목표, 신체 정보, 총 섭취 칼로리 및 달성률, 탄단지 비중 바, AI 1줄 코멘트 포함
+     - Sprint 4 이미지 캡처/클립보드 연동을 위한 `id="nutri-snap-share-card"` 바인딩
 
 ---
 
@@ -164,14 +166,14 @@ gantt
 
 | 번호 | 요구사항 항목 | 스프린트 | 검증 상태 |
 | :---: | :--- | :---: | :---: |
-| **DoD-1** | 단일 화면(Single-Page) 구성 완료 | Sprint 1, 3 | 🟡 Sprint 1 입력 폼 완료 |
-| **DoD-2** | TDEE 산출 및 AI 탄단지/칼로리/경고 분석 출력 | Sprint 1, 2, 3 | ✅ Sprint 2 분석 파이프라인 연동 완료 |
+| **DoD-1** | 단일 화면(Single-Page) 구성 완료 | Sprint 1, 3 | ✅ 완료 (Sprint 1, 3) |
+| **DoD-2** | TDEE 산출 및 AI 탄단지/칼로리/경고 분석 출력 | Sprint 1, 2, 3 | ✅ 완료 (Sprint 1, 2, 3) |
 | **DoD-3** | 요약 결과 카드 1클릭 클립보드 복사 & Web Share 연동 | Sprint 4 | ⬜ 대기 |
 | **DoD-4-1** | [예외 1] 빈 입력 시 `#FF0000` 경고 문구 및 포커스 | Sprint 1 | ✅ 완료 (Sprint 1) |
 | **DoD-4-2** | [예외 2] 글자수 인디케이터 (0/200) 및 초과 제한/빨간색 전환 | Sprint 1 | ✅ 완료 (Sprint 1) |
 | **DoD-4-3** | [예외 3] AI 응답 지연 시 "AI 분석 중..." 스피너 오버레이 | Sprint 2 | ✅ 완료 (Sprint 2) |
 | **DoD-4-4** | [예외 4] AI 응답 실패 시 1초 후 "AI 재분석 중..." 1회 자동 재시도 | Sprint 2 | ✅ 완료 (Sprint 2) |
-| **DoD-4-5** | [예외 5] 비정상 데이터 시 재점검 유도 및 재시도 버튼 | Sprint 2, 3 | ✅ 완료 (Sprint 2) |
+| **DoD-4-5** | [예외 5] 비정상 데이터 시 재점검 유도 및 재시도 버튼 | Sprint 2, 3 | ✅ 완료 (Sprint 2, 3) |
 | **DoD-4-6** | [예외 6] Web Share 미지원 시 이미지 자동 다운로드 Fallback | Sprint 4 | ⬜ 대기 |
 | **DoD-5** | DB/로그인/결제 없는 순수 클라이언트 단일 앱 Scope 준수 | 전 스프린트 | ✅ 준수 중 |
 

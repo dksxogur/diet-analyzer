@@ -29,6 +29,8 @@ import {
 import { LoadingOverlay } from '@/components/common/loading-overlay'
 import { RetryModal } from '@/components/common/retry-modal'
 import { ErrorState } from '@/components/common/error-state'
+import { SummaryPanel } from '@/components/result/summary-panel'
+import { ShareCard } from '@/components/result/share-card'
 
 export function DietAnalyzer() {
   // --- Form States ---
@@ -547,57 +549,37 @@ export function DietAnalyzer() {
             />
           )}
 
-          {/* Sprint 2 AI Analysis Result Integration Check Banner */}
+          {/* Sprint 3: Full Nutrition Dashboard Panel & Visual Share Card (PRD 3.2) */}
           {analysisResult && !hasDataError && (
-            <section
-              aria-label="분석 결과 요약"
-              className="bg-slate-900/90 border border-emerald-500/30 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 animate-in fade-in duration-300"
-            >
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <div className="flex items-center gap-2 text-emerald-400 font-bold text-base">
-                  <CheckCircle2 className="w-5 h-5" />
-                  <span>AI 식단 분석 완료 (Sprint 2 연동 완료)</span>
-                </div>
-                <span className="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-full font-medium">
-                  {analysisResult.totalCalories.toLocaleString()} kcal
-                </span>
-              </div>
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+              {/* 1. Nutrition Diagnostic Summary Panel */}
+              <SummaryPanel
+                result={analysisResult}
+                targets={nutritionTargets}
+                goal={goal}
+              />
 
-              {/* 1-Line Comment */}
-              <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 text-xs sm:text-sm text-slate-200 leading-relaxed font-medium">
-                💬 {analysisResult.summaryComment}
-              </div>
+              {/* 2. Visual Summary Share Card Section */}
+              <section className="space-y-4">
+                <div className="text-center space-y-1">
+                  <h3 className="text-base font-bold text-white flex items-center justify-center gap-2">
+                    <Sparkles className="w-4 h-4 text-emerald-400" />
+                    시각적 요약 공유 카드
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    SNS 및 메신저 공유에 최적화된 결과 카드입니다.
+                  </p>
+                </div>
 
-              {/* Macronutrient Pills */}
-              <div className="grid grid-cols-3 gap-3 text-center">
-                <div className="bg-slate-950/60 border border-slate-800 p-3 rounded-2xl">
-                  <span className="text-[10px] text-slate-400 uppercase font-semibold">탄수화물</span>
-                  <p className="text-base font-bold text-white mt-0.5">{analysisResult.carbs}g</p>
-                </div>
-                <div className="bg-slate-950/60 border border-slate-800 p-3 rounded-2xl">
-                  <span className="text-[10px] text-slate-400 uppercase font-semibold">단백질</span>
-                  <p className="text-base font-bold text-emerald-400 mt-0.5">{analysisResult.protein}g</p>
-                </div>
-                <div className="bg-slate-950/60 border border-slate-800 p-3 rounded-2xl">
-                  <span className="text-[10px] text-slate-400 uppercase font-semibold">지방</span>
-                  <p className="text-base font-bold text-white mt-0.5">{analysisResult.fat}g</p>
-                </div>
-              </div>
-
-              {/* Warning Badges */}
-              {analysisResult.warnings && analysisResult.warnings.length > 0 && (
-                <div className="space-y-1.5 pt-1">
-                  {analysisResult.warnings.map((w, idx) => (
-                    <p
-                      key={idx}
-                      className="text-xs font-medium text-amber-300/90 bg-amber-500/10 border border-amber-500/20 rounded-xl px-3 py-2"
-                    >
-                      {w}
-                    </p>
-                  ))}
-                </div>
-              )}
-            </section>
+                <ShareCard
+                  result={analysisResult}
+                  targets={nutritionTargets}
+                  goal={goal}
+                  height={height}
+                  weight={weight}
+                />
+              </section>
+            </div>
           )}
         </div>
 
