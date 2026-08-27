@@ -27,7 +27,7 @@
 ```plaintext
 diet-analyzer/
 ├── docs/
-│   └── DEVELOPMENT_PLAN.md      # 본 개발 계획서 (v1.2.0)
+│   └── DEVELOPMENT_PLAN.md      # 본 개발 계획서 (v1.3.0)
 ├── PRD.md                       # 제품 요구사항 정의서
 ├── app/
 │   ├── layout.tsx               # 루트 레이아웃 & 폰트/테마
